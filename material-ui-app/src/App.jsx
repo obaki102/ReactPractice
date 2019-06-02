@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Header, Footer } from "./Components/Layouts";
-import Container from "./Customer/Container";
+import GridView from "./Customer/GridView";
 //import Departments from "./Categories/Departments";
 import "./App.css";
 
@@ -34,7 +34,7 @@ class App extends Component {
       return (
         <React.Fragment>
           <Header />
-          <Container customers={customers} />
+          <GridView dataSource={customers} />
           <Footer departments={this.departments} />
         </React.Fragment>
       );
