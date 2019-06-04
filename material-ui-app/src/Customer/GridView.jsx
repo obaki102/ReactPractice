@@ -1,25 +1,28 @@
 import React, { Component } from "react";
-import { Grid } from "@material-ui/core";
-import LeftPane from "./LeftPane";
-import RightPane from "./RightPane";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableFooter from "@material-ui/core/TableFooter";
-import TablePagination from "@material-ui/core/TablePagination";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TablePagination,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  BottomNavigation
+} from "@material-ui/core";
 import IconButton from "@material-ui/core/IconButton";
 import FirstPageIcon from "@material-ui/icons/FirstPage";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 import LastPageIcon from "@material-ui/icons/LastPage";
 import PropTypes from "prop-types";
-const styles = {
-  paper: { padding: 20, marginTop: 10, marginBottom: 10 }
-};
+import "typeface-roboto";
+import InputBase from "@material-ui/core/InputBase";
+import Icon from "@material-ui/core/Icon";
+import { connect } from "react-redux";
+import { fetchPosts } from "../Actions/postActions";
 
 const useStyles1 = makeStyles(theme => ({
   root: {
@@ -99,19 +102,6 @@ TablePaginationActions.propTypes = {
   rowsPerPage: PropTypes.number.isRequired
 };
 
-const useStyles2 = makeStyles(theme => ({
-  root: {
-    width: "100%",
-    marginTop: theme.spacing(3)
-  },
-  table: {
-    minWidth: 500
-  },
-  tableWrapper: {
-    overflowX: "auto"
-  }
-}));
-
 class GridView extends Component {
   constructor(props) {
     super(props);
@@ -119,6 +109,10 @@ class GridView extends Component {
       page: 0,
       rowsPerPage: 10
     };
+  }
+
+  componentWillMount() {
+    this.props.fetchPosts();
   }
 
   handleChangePage = (event, newPage) => {
@@ -131,22 +125,58 @@ class GridView extends Component {
     this.setState({ rowsPerPage });
   };
 
+  getHeaderTitle = header => {
+    return header.split(/(?=[A-Z])/).join(" ");
+  };
+
+  capitalizeFirstLetter = s => {
+    if (typeof s !== "string") return "";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+
   render() {
-    const { dataSource } = this.props;
+    const dataSource = this.props.posts;
+    //let headers = [];
+
+    // const listofHeaders = Object.keys(dataSource[0]);
+
+    // listofHeaders.map(k => {
+    //   const title = this.capitalizeFirstLetter(this.getHeaderTitle(k));
+    //   headers.push({ title: title, field: k });
+    //   return headers;
+    // });
+    const headers = [
+      { title: "First Name", field: "firstName" },
+      { title: "Last Name", field: "lastName" },
+      { title: "Birth Date", field: "birthDate" },
+      { title: "Email Address", field: "emailAddress" }
+    ];
+
     const { page, rowsPerPage } = this.state;
     const emptyRows =
       rowsPerPage -
       Math.min(rowsPerPage, dataSource.length - page * rowsPerPage);
-    const headers = Object.keys(dataSource[0]);
 
     return (
-      <Paper className={useStyles2.root}>
+      <Paper>
+        <div>
+          <div>
+            <Icon>add_circle</Icon>
+          </div>
+          <InputBase
+            onChange={this.props.onSelectChange}
+            placeholder="Search…"
+          />
+        </div>
+
         <Table>
           <TableHead>
             <TableRow>
               {headers.map((header, index) => (
                 <TableCell key={index} align="left">
-                  {header}
+                  <Typography variant="h6" gutterBottom>
+                    {header.title}
+                  </Typography>
                 </TableCell>
               ))}
             </TableRow>
@@ -158,20 +188,9 @@ class GridView extends Component {
                 <TableRow key={row.customerKey}>
                   {headers.map((header, index) => (
                     <TableCell key={index} align="left">
-                      {row[header]}
+                      {row[header.field]}
                     </TableCell>
                   ))}
-
-                  {/* <TableCell key={`trc-{i}-bd`} align="left">
-                    {new Intl.DateTimeFormat("en-GB", {
-                      year: "numeric",
-                      month: "long",
-                      day: "2-digit"
-                    }).format(row.birthdate)}
-                  </TableCell> */}
-                  <TableCell key={`trc-{i}-ed`} align="left">
-                    {row.emailAddress}
-                  </TableCell>
                 </TableRow>
               ))}
 
@@ -204,4 +223,16 @@ class GridView extends Component {
   }
 }
 
-export default GridView;
+GridView.propTypes = {
+  fetchPosts: PropTypes.func.isRequired,
+  posts: PropTypes.array.isRequired
+};
+
+const mapStateToProps = state => ({
+  posts: state.posts.items
+});
+
+export default connect(
+  mapStateToProps,
+  { fetchPosts }
+)(GridView);

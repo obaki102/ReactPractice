@@ -1,22 +1,16 @@
 import React, { Component } from "react";
 import { Header, Footer } from "./Components/Layouts";
-import GridView from "./Customer/GridView";
-//import Departments from "./Categories/Departments";
+import GridView from "./Customer/gridView";
 import "./App.css";
+import store from "./store";
+import { Provider } from "react-redux";
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { isLoaded: false, customers: [] };
-  }
+  // constructor(props) {
+  //   super(props);
+  //   this.state = { isLoaded: false, customers: [], dataSource: [] };
+  // }
 
-  componentDidMount() {
-    fetch("https://localhost:5001/api/customers")
-      .then(res => res.json())
-      .then(json => {
-        this.setState({ isLoaded: true, customers: json });
-      });
-  }
   departments = [
     { id: 1, value: "Corporate" },
     { id: 2, value: "EGA" },
@@ -27,20 +21,24 @@ class App extends Component {
     // { id: 7, value: "Sales and Marketing" }
   ];
 
-  render() {
-    const { isLoaded, customers } = this.state;
+  handleSelectChange = e => {
+    const temp = [...this.state.customers];
+    const dataSource = e.target.value
+      ? temp.filter(f => f["firstName"].toLowerCase().includes(e.target.value))
+      : temp;
 
-    if (isLoaded) {
-      return (
+    this.setState({ dataSource });
+  };
+  render() {
+    return (
+      <Provider store={store}>
         <React.Fragment>
           <Header />
-          <GridView dataSource={customers} />
+          <GridView />
           <Footer departments={this.departments} />
         </React.Fragment>
-      );
-    } else {
-      return <div>Loading ...</div>;
-    }
+      </Provider>
+    );
   }
 }
 
