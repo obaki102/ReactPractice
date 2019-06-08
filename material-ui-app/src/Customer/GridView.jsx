@@ -101,18 +101,28 @@ TablePaginationActions.propTypes = {
   page: PropTypes.number.isRequired,
   rowsPerPage: PropTypes.number.isRequired
 };
-
+const dataSource = [];
 class GridView extends Component {
   constructor(props) {
     super(props);
     this.state = {
       page: 0,
-      rowsPerPage: 10
+      rowsPerPage: 10,
+      dataSource: []
     };
   }
 
   componentWillMount() {
+    console.log("componentWillMount");
     this.props.fetchPosts();
+  }
+
+  componentDidMount() {
+    console.log("componentDidMount");
+  }
+
+  componentDidUpdate() {
+    console.log("componentDidUpdate");
   }
 
   handleChangePage = (event, newPage) => {
@@ -134,8 +144,21 @@ class GridView extends Component {
     return s.charAt(0).toUpperCase() + s.slice(1);
   };
 
+  onSelectChange = e => {
+    console.log("onChange");
+    const temp = [...this.props.posts];
+    const dataSource = e.target.value
+      ? temp.filter(f => f["firstName"].toLowerCase().includes(e.target.value))
+      : temp;
+    this.setState({ dataSource });
+  };
+
   render() {
-    const dataSource = this.props.posts;
+    console.log("render");
+    const dataSource =
+      this.state.dataSource.length > 0
+        ? this.state.dataSource
+        : this.props.posts;
     //let headers = [];
 
     // const listofHeaders = Object.keys(dataSource[0]);
@@ -160,13 +183,7 @@ class GridView extends Component {
     return (
       <Paper>
         <div>
-          <div>
-            <Icon>add_circle</Icon>
-          </div>
-          <InputBase
-            onChange={this.props.onSelectChange}
-            placeholder="Search…"
-          />
+          <InputBase onChange={this.onSelectChange} placeholder="Search…" />
         </div>
 
         <Table>
