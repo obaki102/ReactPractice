@@ -6,11 +6,6 @@ import store from "./store";
 import { Provider } from "react-redux";
 
 class App extends Component {
-  // constructor(props) {
-  //   super(props);
-  //   this.state = { isLoaded: false, customers: [], dataSource: [] };
-  // }
-
   departments = [
     { id: 1, value: "Corporate" },
     { id: 2, value: "EGA" },
@@ -21,14 +16,6 @@ class App extends Component {
     // { id: 7, value: "Sales and Marketing" }
   ];
 
-  handleSelectChange = e => {
-    const temp = [...this.state.customers];
-    const dataSource = e.target.value
-      ? temp.filter(f => f["firstName"].toLowerCase().includes(e.target.value))
-      : temp;
-
-    this.setState({ dataSource });
-  };
   render() {
     return (
       <Provider store={store}>

@@ -20,10 +20,9 @@ import LastPageIcon from "@material-ui/icons/LastPage";
 import PropTypes from "prop-types";
 import "typeface-roboto";
 import InputBase from "@material-ui/core/InputBase";
-import Icon from "@material-ui/core/Icon";
 import { connect } from "react-redux";
-import { fetchPosts } from "../Actions/postActions";
-
+import { fetchCustomers } from "../Actions/postActions";
+import EditDialog from "../Components/Dialog/editDialog";
 const useStyles1 = makeStyles(theme => ({
   root: {
     flexShrink: 0,
@@ -101,7 +100,7 @@ TablePaginationActions.propTypes = {
   page: PropTypes.number.isRequired,
   rowsPerPage: PropTypes.number.isRequired
 };
-const dataSource = [];
+
 class GridView extends Component {
   constructor(props) {
     super(props);
@@ -114,7 +113,7 @@ class GridView extends Component {
 
   componentWillMount() {
     console.log("componentWillMount");
-    this.props.fetchPosts();
+    this.props.fetchCustomers();
   }
 
   componentDidMount() {
@@ -123,6 +122,12 @@ class GridView extends Component {
 
   componentDidUpdate() {
     console.log("componentDidUpdate");
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.newCustomer) {
+      this.props.customers.unshift(nextProps.newCustomer);
+    }
   }
 
   handleChangePage = (event, newPage) => {
@@ -146,7 +151,7 @@ class GridView extends Component {
 
   onSelectChange = e => {
     console.log("onChange");
-    const temp = [...this.props.posts];
+    const temp = [...this.props.customers];
     const dataSource = e.target.value
       ? temp.filter(f => f["firstName"].toLowerCase().includes(e.target.value))
       : temp;
@@ -158,7 +163,7 @@ class GridView extends Component {
     const dataSource =
       this.state.dataSource.length > 0
         ? this.state.dataSource
-        : this.props.posts;
+        : this.props.customers;
     //let headers = [];
 
     // const listofHeaders = Object.keys(dataSource[0]);
@@ -169,6 +174,7 @@ class GridView extends Component {
     //   return headers;
     // });
     const headers = [
+      { title: "Options", field: "" },
       { title: "First Name", field: "firstName" },
       { title: "Last Name", field: "lastName" },
       { title: "Birth Date", field: "birthDate" },
@@ -186,11 +192,11 @@ class GridView extends Component {
           <InputBase onChange={this.onSelectChange} placeholder="Search…" />
         </div>
 
-        <Table>
+        <Table size="small">
           <TableHead>
             <TableRow>
               {headers.map((header, index) => (
-                <TableCell key={index} align="left">
+                <TableCell key={index} align="center">
                   <Typography variant="h6" gutterBottom>
                     {header.title}
                   </Typography>
@@ -203,11 +209,21 @@ class GridView extends Component {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map(row => (
                 <TableRow key={row.customerKey}>
-                  {headers.map((header, index) => (
-                    <TableCell key={index} align="left">
-                      {row[header.field]}
-                    </TableCell>
-                  ))}
+                  {headers.map(function(header, index) {
+                    if (index == 0) {
+                      return (
+                        <TableCell key="0" align="right">
+                          <EditDialog customerKey={row["customerKey"]} />
+                        </TableCell>
+                      );
+                    } else {
+                      return (
+                        <TableCell key={index} align="left">
+                          {row[header.field]}
+                        </TableCell>
+                      );
+                    }
+                  })}
                 </TableRow>
               ))}
 
@@ -241,15 +257,17 @@ class GridView extends Component {
 }
 
 GridView.propTypes = {
-  fetchPosts: PropTypes.func.isRequired,
-  posts: PropTypes.array.isRequired
+  fetchCustomers: PropTypes.func.isRequired,
+  customers: PropTypes.array.isRequired,
+  newCustomer: PropTypes.object
 };
 
 const mapStateToProps = state => ({
-  posts: state.posts.items
+  customers: state.posts.records,
+  newCustomer: state.posts.record
 });
 
 export default connect(
   mapStateToProps,
-  { fetchPosts }
+  { fetchCustomers }
 )(GridView);

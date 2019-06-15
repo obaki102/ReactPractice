@@ -14,9 +14,9 @@ import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import Slide from "@material-ui/core/Slide";
 import Fab from "@material-ui/core/Fab";
-import AddIcon from "@material-ui/icons/Add";
+import EditIcon from "@material-ui/icons/Edit";
 import { connect } from "react-redux";
-import { createCustomer } from "../../Actions/postActions";
+import { fetchCustomer } from "../../Actions/postActions";
 import PropTypes from "prop-types";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -27,7 +27,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-class createDialog extends Component {
+class editDialog extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -35,13 +35,18 @@ class createDialog extends Component {
       setOpen: false,
       firstName: "",
       lastName: "",
-      email: "",
-      birthDate: new Date("6/6/2019")
+      emailAddress: "",
+      birthDate: ""
     };
+  }
+
+  componentWillMount() {
+    //this.setState({ firstName: this.props.customer.firstName });
   }
 
   handleClickOpen = () => {
     this.setState({ setOpen: true });
+    this.props.fetchCustomer(this.props.customerKey);
   };
 
   handleToggle = () => {
@@ -57,32 +62,24 @@ class createDialog extends Component {
   };
 
   createCustomer = () => {
-    //get max value of a property in an object or array
-    const maxVal = Math.max(...this.props.customers.map(c => c.customerKey), 0);
-    console.log(maxVal);
-    //Math.floor(Math.random() * 100000000 + 1
-    const cust = {
-      firstName: this.state.firstName,
-      lastName: this.state.lastName,
-      emailAddress: this.state.email,
-      birthDate: this.state.birthDate,
-      geographyKey: 26,
-      customerAlternateKey: "AW000" + (maxVal + 1)
-    };
-    this.props.createCustomer(cust);
     this.handleToggle();
   };
   render() {
-    const { firstName, lastName, email, birthDate } = this.state;
+    const {
+      firstName,
+      lastName,
+      emailAddress,
+      birthDate
+    } = this.props.customer;
     return (
       <React.Fragment>
         <Fab
-          color="default"
+          color="primary"
           size="small"
           aria-label="Add"
           onClick={this.handleClickOpen}
         >
-          <AddIcon />
+          <EditIcon />
         </Fab>
         <Dialog
           open={this.state.setOpen}
@@ -93,7 +90,7 @@ class createDialog extends Component {
             <AppBar style={{ position: "relative" }}>
               <Toolbar>
                 <DialogTitle id="max-width-dialog-title">
-                  Create new record
+                  {"Edit record :" + lastName + " " + firstName}
                 </DialogTitle>
               </Toolbar>
             </AppBar>
@@ -103,7 +100,7 @@ class createDialog extends Component {
                   <TextField
                     id="standard-name"
                     label="First Name"
-                    value={firstName}
+                    value={firstName || ""}
                     onChange={this.handleChange("firstName")}
                     margin="normal"
                     style={{ width: 500 }}
@@ -114,7 +111,7 @@ class createDialog extends Component {
                   <TextField
                     id="standard-name"
                     label="Last Name"
-                    value={lastName}
+                    value={lastName || ""}
                     onChange={this.handleChange("lastName")}
                     margin="normal"
                     style={{ width: 500 }}
@@ -126,7 +123,7 @@ class createDialog extends Component {
                   <TextField
                     id="standard-name"
                     label="Email"
-                    value={email}
+                    value={emailAddress || ""}
                     onChange={this.handleChange("email")}
                     margin="normal"
                     style={{ width: 500 }}
@@ -138,6 +135,7 @@ class createDialog extends Component {
                     id="date"
                     label="Birthday"
                     type="date"
+                    value={birthDate || "1990-01-01"}
                     onChange={this.handleChange("birthDate")}
                     InputLabelProps={{
                       shrink: true
@@ -160,17 +158,16 @@ class createDialog extends Component {
     );
   }
 }
-createDialog.propTypes = {
-  createCustomer: PropTypes.func.isRequired,
-  customers: PropTypes.array.isRequired
+editDialog.propTypes = {
+  fetchCustomer: PropTypes.func.isRequired,
+  customer: PropTypes.object.isRequired
 };
 
 const mapStateToProps = state => ({
-  customers: state.posts.records,
-  newCustomer: state.posts.record
+  customer: state.posts.customer
 });
 
 export default connect(
   mapStateToProps,
-  { createCustomer }
-)(createDialog);
+  { fetchCustomer }
+)(editDialog);
