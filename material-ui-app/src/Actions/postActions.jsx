@@ -1,4 +1,4 @@
-import { FETCH_POSTS, NEW_POST, FETCH_POST } from "./types";
+import { FETCH_POSTS, NEW_POST, FETCH_POST, PUT_CUST } from "./types";
 
 export const fetchCustomers = () => dispatch => {
   console.log("fetching..");
@@ -25,7 +25,6 @@ export const fetchCustomer = id => dispatch => {
 };
 
 export const createCustomer = customer => dispatch => {
-  console.log(customer);
   fetch("https://localhost:5001/api/customers", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -35,6 +34,21 @@ export const createCustomer = customer => dispatch => {
     .then(post =>
       dispatch({
         type: NEW_POST,
+        payload: post
+      })
+    );
+};
+
+export const modifyCustomer = customer => dispatch => {
+  fetch("https://localhost:5001/api/customers/" + customer["customerKey"], {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(customer)
+  })
+    .then(res => res.json())
+    .then(post =>
+      dispatch({
+        type: PUT_CUST,
         payload: post
       })
     );

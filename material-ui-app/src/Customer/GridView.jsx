@@ -22,7 +22,8 @@ import "typeface-roboto";
 import InputBase from "@material-ui/core/InputBase";
 import { connect } from "react-redux";
 import { fetchCustomers } from "../Actions/postActions";
-import EditDialog from "../Components/Dialog/editDialog";
+import { EditDialog, DeleteDialog } from "../Components/Dialog/";
+import LinearProgress from "@material-ui/core/LinearProgress";
 const useStyles1 = makeStyles(theme => ({
   root: {
     flexShrink: 0,
@@ -107,13 +108,15 @@ class GridView extends Component {
     this.state = {
       page: 0,
       rowsPerPage: 10,
-      dataSource: []
+      dataSource: [],
+      loading: true
     };
   }
 
   componentWillMount() {
     console.log("componentWillMount");
     this.props.fetchCustomers();
+    this.setState({ loading: this.props.loading });
   }
 
   componentDidMount() {
@@ -125,8 +128,13 @@ class GridView extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    console.log("componentWillReceiveProps");
     if (nextProps.newCustomer) {
       this.props.customers.unshift(nextProps.newCustomer);
+    }
+    if (nextProps.customers) {
+      this.setState({ loading: false });
+      this.setState({ dataSource: nextProps.customers });
     }
   }
 
@@ -159,11 +167,7 @@ class GridView extends Component {
   };
 
   render() {
-    console.log("render");
-    const dataSource =
-      this.state.dataSource.length > 0
-        ? this.state.dataSource
-        : this.props.customers;
+    const dataSource = this.state.dataSource;
     //let headers = [];
 
     // const listofHeaders = Object.keys(dataSource[0]);
@@ -188,6 +192,9 @@ class GridView extends Component {
 
     return (
       <Paper>
+        {this.state.loading && (
+          <LinearProgress color="secondary" variant="query" />
+        )}
         <div>
           <InputBase onChange={this.onSelectChange} placeholder="Search…" />
         </div>
@@ -214,6 +221,7 @@ class GridView extends Component {
                       return (
                         <TableCell key="0" align="right">
                           <EditDialog customerKey={row["customerKey"]} />
+                          <DeleteDialog customerKey={row["customerKey"]} />
                         </TableCell>
                       );
                     } else {
@@ -264,7 +272,8 @@ GridView.propTypes = {
 
 const mapStateToProps = state => ({
   customers: state.posts.records,
-  newCustomer: state.posts.record
+  newCustomer: state.posts.record,
+  loading: state.posts.loading
 });
 
 export default connect(

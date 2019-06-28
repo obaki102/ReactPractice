@@ -15,8 +15,13 @@ import CloseIcon from "@material-ui/icons/Close";
 import Slide from "@material-ui/core/Slide";
 import Fab from "@material-ui/core/Fab";
 import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
 import { connect } from "react-redux";
-import { fetchCustomer } from "../../Actions/postActions";
+import {
+  fetchCustomer,
+  modifyCustomer,
+  fetchCustomers
+} from "../../Actions/postActions";
 import PropTypes from "prop-types";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -28,25 +33,24 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 class editDialog extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      setOpen: false,
-      firstName: "",
-      lastName: "",
-      emailAddress: "",
-      birthDate: ""
-    };
-  }
+  state = {
+    open: false,
+    setOpen: false,
+    firstName: "",
+    lastName: "",
+    emailAddress: "",
+    birthDate: ""
+  };
 
   componentWillMount() {
-    //this.setState({ firstName: this.props.customer.firstName });
+    const cKey = this.props.customerKey;
+    const tempCust = [...this.props.customers];
+    const customer = tempCust.find(f => f.customerKey == cKey);
+    this.setState(customer);
   }
 
   handleClickOpen = () => {
     this.setState({ setOpen: true });
-    this.props.fetchCustomer(this.props.customerKey);
   };
 
   handleToggle = () => {
@@ -61,16 +65,12 @@ class editDialog extends Component {
     this.setState({ birthDate: date });
   };
 
-  createCustomer = () => {
+  saveCustomer = () => {
+    this.props.modifyCustomer(this.state);
     this.handleToggle();
   };
   render() {
-    const {
-      firstName,
-      lastName,
-      emailAddress,
-      birthDate
-    } = this.props.customer;
+    const { firstName, lastName, emailAddress, birthDate } = this.state;
     return (
       <React.Fragment>
         <Fab
@@ -81,6 +81,7 @@ class editDialog extends Component {
         >
           <EditIcon />
         </Fab>
+
         <Dialog
           open={this.state.setOpen}
           onClose={this.handleToggle}
@@ -124,7 +125,7 @@ class editDialog extends Component {
                     id="standard-name"
                     label="Email"
                     value={emailAddress || ""}
-                    onChange={this.handleChange("email")}
+                    onChange={this.handleChange("emailAddress")}
                     margin="normal"
                     style={{ width: 500 }}
                     placeholder="Email"
@@ -146,8 +147,8 @@ class editDialog extends Component {
             </form>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.createCustomer} color="primary">
-              Create
+            <Button onClick={this.saveCustomer} color="primary">
+              Save
             </Button>
             <Button onClick={this.handleToggle} color="secondary">
               Close
@@ -159,15 +160,14 @@ class editDialog extends Component {
   }
 }
 editDialog.propTypes = {
-  fetchCustomer: PropTypes.func.isRequired,
-  customer: PropTypes.object.isRequired
+  customers: PropTypes.array.isRequired
 };
 
 const mapStateToProps = state => ({
-  customer: state.posts.customer
+  customers: state.posts.records
 });
 
 export default connect(
   mapStateToProps,
-  { fetchCustomer }
+  { fetchCustomer, modifyCustomer, fetchCustomers }
 )(editDialog);
